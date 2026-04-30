@@ -32,6 +32,11 @@ async def on_startup(application):
     print("Admin startup notification complete.")
 
 def run_bot():
+    if not BOT_TOKEN:
+        logger.error("BOT_TOKEN is missing! Please set the BOT_TOKEN environment variable.")
+        print("ERROR: BOT_TOKEN environment variable is not set. The bot cannot start.")
+        sys.exit(1)
+        
     application = Application.builder().token(BOT_TOKEN).post_init(on_startup).build()
 
     # Register handlers
