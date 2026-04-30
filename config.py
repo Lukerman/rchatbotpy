@@ -46,10 +46,15 @@ def _load_lang(default_lang):
     if raw.lower() in {"en", "en-us", "en_gb", "english"}:
         return default_lang
 
-    parsed = json.loads(raw)
-    if not isinstance(parsed, dict):
-        raise ValueError("LANG must be an object mapping or language code like 'en'.")
-    return parsed
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, dict):
+            return parsed
+    except Exception:
+        pass
+        
+    # Fallback to default if it's not a valid JSON dict (e.g., standard OS locales like 'en_US.UTF-8')
+    return default_lang
 
 # ==================== BOT SETTINGS ====================
 BOT_TOKEN = _env_or_default('BOT_TOKEN', '')
