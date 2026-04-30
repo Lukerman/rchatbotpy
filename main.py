@@ -1,10 +1,9 @@
 import logging
 import os
-import subprocess
 import sys
 import time
-
 import requests
+import threading
 from telegram.ext import Application
 from config import BOT_TOKEN
 from handlers import setup_handlers
@@ -55,44 +54,39 @@ def delete_webhook():
     except Exception as e:
         print(f"Warning: Could not delete webhook: {e}")
 
+def run_web_admin():
+    try:
+        from web_admin.app import app
+        port = int(os.environ.get("PORT", 5000))
+        print(f"Starting Web Admin Panel on port {port}...")
+        # Bind to 0.0.0.0 and the PORT environment variable for Render compatibility
+        app.run(host="0.0.0.0", port=port, use_reloader=False, debug=False)
+    except Exception as e:
+        print(f"Failed to start web admin: {e}")
 
 def main():
     if "--bot-only" in sys.argv:
+        delete_webhook()
         run_bot()
         return
 
+    # Clear webhook to ensure polling works on Render
     delete_webhook()
-    print("Starting Telegram Bot...")
-    bot_process = subprocess.Popen([sys.executable, "main.py", "--bot-only"])
+    
+    # Start the web server in a background thread.
+    # This ensures both the bot and web admin share the same process,
+    # fitting within Render's memory limits and satisfying the port binding requirement.
+    web_thread = threading.Thread(target=run_web_admin, daemon=True)
+    web_thread.start()
 
     time.sleep(1)  # Give it a brief moment to start
 
-    web_port = os.getenv("PORT", "5000")
-    print(f"Starting Web Admin Panel on http://0.0.0.0:{web_port} ...")
-    admin_process = subprocess.Popen([sys.executable, "web_admin/app.py"])
-
-    print("\nBoth processes are running! Press Ctrl+C to stop both safely.\n")
-
+    print("Starting Telegram Bot...")
     try:
-        # Keep running until one crashes or user presses Ctrl+C
-        while True:
-            time.sleep(1)
-            if bot_process.poll() is not None:
-                print("\nTelegram Bot stopped unexpectedly.")
-                break
-            if admin_process.poll() is not None:
-                print("\nWeb Admin Panel stopped unexpectedly.")
-                break
-
+        # Run bot in the main thread (this is a blocking call)
+        run_bot()
     except KeyboardInterrupt:
-        print("\nShutting down processes...")
-
-    # Gracefully terminate both
-    bot_process.terminate()
-    admin_process.terminate()
-    bot_process.wait()
-    admin_process.wait()
-    print("All processes completely terminated.")
+        print("\nShutting down gracefully...")
 
 if __name__ == "__main__":
     main()

@@ -63,6 +63,10 @@ def dashboard():
     total_posts = db.get_wall_post_count()
     return render_template('dashboard.html', users=users, active=active, queue=queue, total_posts=total_posts)
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "ok", "message": "Service is running"}), 200
+
 @app.route('/users')
 @login_required
 def users_list():
