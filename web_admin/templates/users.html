@@ -1,0 +1,164 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="space-y-8 fade-in">
+    <!-- Header & Search -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h2 class="text-3xl font-black text-white tracking-tight">User Directory</h2>
+            <p class="text-slate-400 mt-1 text-sm">Managing {{ total_items }} registered community members.</p>
+        </div>
+        
+        <form action="{{ url_for('users_list') }}" method="GET" class="flex w-full md:w-96">
+            <div class="relative w-full group">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors"></i>
+                <input type="text" name="search" value="{{ search }}" placeholder="Search ID, Name or Username..." 
+                       class="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm font-medium">
+            </div>
+            {% if search %}
+            <a href="{{ url_for('users_list') }}" class="ml-2 flex items-center justify-center bg-white/5 hover:bg-white/10 px-4 rounded-2xl transition-all border border-white/10">
+                <i class="fa-solid fa-xmark text-slate-400"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="glass rounded-[32px] overflow-hidden border border-white/5 shadow-2xl">
+        <div class="overflow-x-auto text-sm">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-white/5 text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
+                        <th class="px-8 py-5">User Profile</th>
+                        <th class="px-8 py-5">System Status</th>
+                        <th class="px-8 py-5">Economics</th>
+                        <th class="px-8 py-5">Last Activity</th>
+                        <th class="px-8 py-5 text-right">Management</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for user in users %}
+                    <tr class="hover:bg-white/5 transition-colors group">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center font-black text-blue-400 border border-blue-500/20 shadow-inner">
+                                    {{ user.first_name[0] if user.first_name else '?' }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-100 text-base">{{ user.first_name or 'Unknown User' }}</p>
+                                    <p class="text-xs text-slate-500 font-medium">@{{ user.username or 'none' }} • <code class="bg-white/5 px-1.5 py-0.5 rounded">{{ user.user_id }}</code></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="flex flex-wrap gap-2">
+                                {% if user.is_vip %}
+                                <span class="bg-blue-500/10 text-blue-400 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-blue-500/20 shadow-sm shadow-blue-500/10">
+                                    <i class="fa-solid fa-gem mr-1"></i> VIP Member
+                                </span>
+                                {% endif %}
+                                {% if user.is_banned %}
+                                <span class="bg-red-500/10 text-red-400 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-red-500/20">
+                                    <i class="fa-solid fa-ban mr-1"></i> Restricted
+                                </span>
+                                {% else %}
+                                <span class="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider border border-emerald-500/20">
+                                    <i class="fa-solid fa-check mr-1"></i> Active User
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-2 text-slate-200 font-black text-sm">
+                                    <i class="fa-solid fa-coins text-yellow-500/60"></i>
+                                    <span>{{ user.coins }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
+                                    <span class="bg-white/5 px-1.5 py-0.5 rounded">Level {{ user.level or 1 }}</span>
+                                    <span>{{ user.total_messages }} Messages</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <p class="text-slate-300 font-bold mb-0.5">{{ user.last_active|datetime }}</p>
+                            <p class="text-[10px] text-slate-600 font-black uppercase tracking-tighter">Heartbeat</p>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="flex items-center justify-end gap-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                <form action="{{ url_for('user_action', action='vip', user_id=user.user_id) }}" method="POST">
+                                    <button class="w-10 h-10 flex items-center justify-center glass-hover rounded-xl text-blue-400 border border-white/5 shadow-lg" title="Toggle VIP Status">
+                                        <i class="fa-solid fa-gem"></i>
+                                    </button>
+                                </form>
+                                {% if user.is_banned %}
+                                <form action="{{ url_for('user_action', action='unban', user_id=user.user_id) }}" method="POST">
+                                    <button class="w-10 h-10 flex items-center justify-center glass-hover rounded-xl text-emerald-400 border border-white/5 shadow-lg" title="Lift Restrictions">
+                                        <i class="fa-solid fa-unlock"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <button onclick="openBanModal('{{ user.user_id }}', '{{ user.first_name }}')" class="w-10 h-10 flex items-center justify-center glass-hover rounded-xl text-red-400 border border-white/5 shadow-lg" title="Restrict User">
+                                    <i class="fa-solid fa-ban"></i>
+                                </button>
+                                {% endif %}
+                                <button onclick="openCashModal('{{ user.user_id }}')" class="w-10 h-10 flex items-center justify-center glass-hover rounded-xl text-yellow-400 border border-white/5 shadow-lg" title="Adjust Currency">
+                                    <i class="fa-solid fa-coins"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-8 py-20 text-center text-slate-600 font-bold uppercase tracking-widest bg-white/5">No Match Found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="px-8 py-6 border-t border-white/5 bg-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">Viewing {{ users|length }} of {{ total_items }} total records</p>
+            <div class="flex gap-3">
+                {% if page > 1 %}
+                <a href="{{ url_for('users_list', page=page-1, search=search) }}" class="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 text-slate-400 hover:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+                {% endif %}
+                {% if page < total_pages %}
+                <a href="{{ url_for('users_list', page=page+1, search=search) }}" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 text-white flex items-center gap-2">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openBanModal(id, name) {
+    if(confirm(`Are you sure you want to BAN ${name} (${id})?`)) {
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/users/ban/${id}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+function openCashModal(id) {
+    let amount = prompt("Enter amount of coins to ADD (use negative to subtract):");
+    if(amount && !isNaN(amount)) {
+        let form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/users/coins/${id}`;
+        let input = document.createElement('input');
+        input.name = 'amount';
+        input.value = amount;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

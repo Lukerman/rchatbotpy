@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login | Bot Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { background: radial-gradient(circle at center, #1e293b, #0f172a, #020617); color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.3); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0, 0, 0.2, 1) forwards; }
+        .glow { box-shadow: 0 0 40px -5px rgba(37, 99, 235, 0.3); }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center p-6 antialiased">
+    <div class="fade-in w-full max-w-md">
+        <!-- Brand -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-3xl shadow-2xl shadow-blue-500/40 mb-6 glow transition-transform hover:scale-110 duration-700">
+                <i class="fa-solid fa-robot text-white text-3xl"></i>
+            </div>
+            <h1 class="text-4xl font-black text-white tracking-tighter">Command Center</h1>
+            <p class="text-slate-500 mt-2 font-medium tracking-wide uppercase text-[10px]">Secure Administrator Authentication</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass p-10 rounded-[40px] shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl"></div>
+
+            <form action="{{ url_for('login', next=request.args.get('next')) }}" method="POST" class="space-y-6 relative z-10">
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Access Token</label>
+                    <div class="relative group">
+                        <i class="fa-solid fa-key absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors"></i>
+                        <input type="password" name="password" placeholder="••••••••••••" 
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-5 py-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-white font-mono placeholder:opacity-30" required autofocus>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-3 animate-bounce">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 group flex items-center justify-center gap-2">
+                    Unlock Dashboard
+                    <i class="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+        </div>
+
+        <p class="text-center mt-12 text-[10px] font-black uppercase tracking-[0.3em] text-slate-700">
+            Node Protection Service v4.0.2
+        </p>
+    </div>
+</body>
+</html>

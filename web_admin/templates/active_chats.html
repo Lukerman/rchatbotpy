@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="fade-in space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h2 class="text-3xl font-black text-white tracking-tight">Live Monitor</h2>
+            <p class="text-slate-400 mt-1 text-sm">Real-time oversight of all current active connections.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-blue-600/10 border border-blue-500/20 px-4 py-2 rounded-2xl text-blue-400 text-xs font-bold flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                <span>{{ chats|length }} ACTIVE SESSIONS</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Chats Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {% if chats %}
+            {% for chat in chats %}
+            <div class="glass rounded-[32px] border border-white/5 overflow-hidden group hover:border-blue-500/30 transition-all duration-500">
+                <div class="p-6 md:p-8 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Session #{{ chat.id }}</span>
+                            {% if chat.is_ai %}
+                            <span class="bg-purple-500/10 text-purple-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-purple-500/20">AI ASSISTED</span>
+                            {% else %}
+                            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-500/20">HUMAN MATCH</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-[11px] font-bold text-slate-500 italic">{{ chat.started_at | datetime }}</span>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
+                        <!-- User 1 -->
+                        <div class="flex-1 space-y-1">
+                            <h4 class="text-white font-bold truncate">{{ chat.u1_name }}</h4>
+                            <p class="text-xs text-slate-500 truncate">@{{ chat.u1_user or 'anonymous' }}</p>
+                        </div>
+
+                        <!-- Connector -->
+                        <div class="flex flex-col items-center gap-1 px-4">
+                            <div class="h-px w-8 bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+                            <i class="fa-solid fa-link text-slate-600 text-[10px]"></i>
+                            <div class="h-px w-8 bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+                        </div>
+
+                        <!-- User 2 -->
+                        <div class="flex-1 text-right space-y-1">
+                            <h4 class="text-white font-bold truncate">{{ chat.u2_name }}</h4>
+                            <p class="text-xs text-slate-500 truncate">@{{ chat.u2_user or 'anonymous' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-white/5 flex items-center justify-between">
+                        <a href="{{ url_for('report_transcript', chat_id=chat.id) }}" class="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            Live Transcript
+                        </a>
+                        <form action="{{ url_for('force_stop_chat', chat_id=chat.id) }}" method="POST" onsubmit="return confirm('Forcefully end this chat session?')">
+                            <button type="submit" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-red-500/20">
+                                Terminate
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="xl:col-span-2 glass rounded-[40px] p-20 flex flex-col items-center justify-center text-center space-y-6">
+                <div class="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center text-slate-600">
+                    <i class="fa-solid fa-ghost text-4xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">Quiet in the Lobby</h3>
+                    <p class="text-slate-500 mt-2 max-w-sm">There are currently no active chat sessions. Check back when more users are online.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

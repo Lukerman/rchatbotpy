@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="fade-in max-w-5xl mx-auto space-y-10">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-center gap-6">
+            <div class="w-16 h-16 bg-blue-600/10 rounded-[28px] flex items-center justify-center text-blue-500 text-3xl border border-blue-500/20 shadow-2xl">
+                <i class="fa-solid fa-scroll"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-white tracking-tight">Incident Evidence</h2>
+                <div class="flex items-center gap-3 mt-1">
+                    <span class="bg-white/5 border border-white/10 px-2 py-0.5 rounded text-[10px] font-black uppercase text-slate-500">Record #{{ chat_id }}</span>
+                    <span class="text-slate-500 text-sm font-medium tracking-wide">Archived Conversation History</span>
+                </div>
+            </div>
+        </div>
+        <a href="{{ url_for('report_list') }}" class="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all border border-white/10 flex items-center gap-3 group">
+            <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+            Return to Desk
+        </a>
+    </div>
+
+    <!-- Transcript Console -->
+    <div class="glass rounded-[48px] border border-white/5 shadow-2xl p-4 md:p-6">
+        <div class="bg-white/[0.02] rounded-[42px] p-8 md:p-14 space-y-10 relative overflow-hidden">
+            {% for msg in messages %}
+            <div class="flex flex-col {{ 'items-end' if loop.index0 % 2 == 0 else 'items-start' }} relative z-10">
+                <div class="flex items-center gap-3 mb-2 px-4">
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] {{ 'text-blue-500' if loop.index0 % 2 == 0 else 'text-purple-500' }}">
+                        {{ msg.sender_name or 'Node ' ~ msg.sender_id }}
+                    </span>
+                    <span class="text-[9px] text-slate-600 font-black tracking-widest uppercase">{{ msg.created_at | datetime }}</span>
+                </div>
+                
+                <div class="max-w-[75%] rounded-[28px] p-7 shadow-2xl relative group-hover:scale-[1.02] transition-transform duration-500 {{ 'bg-blue-600/10 border border-blue-500/20 text-blue-100 rounded-tr-none' if loop.index0 % 2 == 0 else 'bg-white/5 border border-white/10 text-slate-200 rounded-tl-none' }}">
+                    {% if msg.message_type == 'text' %}
+                        <p class="whitespace-pre-wrap leading-relaxed font-medium text-base">"{{ msg.content }}"</p>
+                    {% elif msg.message_type == 'sticker' %}
+                        <div class="flex items-center gap-3 text-slate-500 italic font-bold text-sm">
+                            <i class="fa-solid fa-note-sticky text-lg opacity-50"></i>
+                            <span>Sent specialized visual assets (Sticker)</span>
+                        </div>
+                    {% elif msg.message_type == 'media_request' %}
+                        <div class="flex items-center gap-3 text-amber-500/80 font-black uppercase tracking-widest text-[10px]">
+                            <i class="fa-solid fa-camera-retro text-base"></i>
+                            <span>External Media Payload Requested</span>
+                        </div>
+                    {% else %}
+                        <p class="italic text-slate-500 text-sm font-bold uppercase tracking-widest">[{{ msg.message_type }} System Update]</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Grid Atmospheric Overlays -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/5 rounded-full blur-[100px] pointer-events-none"></div>
+        </div>
+    </div>
+
+    <!-- Security Assurance -->
+    <div class="max-w-3xl mx-auto">
+        <div class="glass p-8 rounded-[32px] border border-white/5 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+            <div class="w-14 h-14 bg-emerald-600/10 rounded-2xl flex items-center justify-center text-emerald-500 text-2xl shrink-0 outline outline-4 outline-emerald-500/10">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <div>
+                <h6 class="text-xs font-black uppercase tracking-widest text-slate-300 mb-1">Privacy Compliant Evidence</h6>
+                <p class="text-[11px] text-slate-500 leading-relaxed font-medium">This transcript is generated solely for moderation audit. Data is encrypted and will be permanently purged from system logs upon incident resolution.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

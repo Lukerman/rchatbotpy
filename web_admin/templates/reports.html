@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="space-y-8 fade-in">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-3xl font-black text-white tracking-tight">Guard Desk</h2>
+            <p class="text-slate-400 mt-1 text-sm">Reviewing {{ total_items }} pending user reports incident by incident.</p>
+        </div>
+        <div class="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-2xl text-red-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
+            <span>{{ total_items }} Pending Alerts</span>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="glass rounded-[40px] overflow-hidden border border-white/5 shadow-2xl">
+        <div class="overflow-x-auto text-sm">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-white/5 text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
+                        <th class="px-10 py-6">Incident Subjects</th>
+                        <th class="px-10 py-6">Complaint Log</th>
+                        <th class="px-10 py-6 text-right">Moderation Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for report in reports %}
+                    <tr class="hover:bg-white/5 transition-colors group">
+                        <td class="px-10 py-8">
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 w-16">Reporter</span>
+                                    <code class="bg-blue-600/10 text-blue-400 px-2.5 py-1 rounded-lg font-bold border border-blue-500/10">{{ report.reporter_id }}</code>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 w-16">Subject</span>
+                                    <code class="bg-red-600/10 text-red-500 px-2.5 py-1 rounded-lg font-bold border border-red-500/10">{{ report.reported_id }}</code>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-10 py-8">
+                            <div class="glass bg-white/[0.03] p-5 rounded-2xl border border-white/5 max-w-sm relative">
+                                <div class="absolute -left-2 top-4 w-4 h-4 glass border border-white/5 rotate-45 transform bg-white/[0.03] border-r-0 border-b-0"></div>
+                                <p class="text-slate-200 font-medium italic leading-relaxed">"{{ report.reason }}"</p>
+                                <div class="mt-4 flex items-center justify-between border-t border-white/5 pt-3">
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Log #{{ report.id }}</span>
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">{{ report.created_at|datetime }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-10 py-8">
+                            <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0">
+                                <form action="{{ url_for('report_action', action='dismiss', report_id=report.id) }}" method="POST">
+                                    <button class="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all border border-white/10">Dismiss</button>
+                                </form>
+                                <form action="{{ url_for('report_action', action='ban', report_id=report.id) }}" method="POST" onsubmit="return confirm('Ban user and resolve incident?')">
+                                    <button class="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-xl shadow-red-600/20">Authorize Ban</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not reports %}
+                    <tr>
+                        <td colspan="3" class="px-10 py-32 text-center bg-white/[0.01]">
+                            <div class="flex flex-col items-center gap-6">
+                                <div class="w-20 h-20 bg-emerald-600/10 rounded-full flex items-center justify-center text-emerald-500/30 text-4xl border border-emerald-500/10">
+                                    <i class="fa-solid fa-shield-check"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-black uppercase tracking-[0.3em] text-xs">All Systems Secure</p>
+                                    <p class="text-slate-500 text-[10px] font-medium mt-2">No pending moderation incidents found in the queue.</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if reports %}
+        <div class="px-10 py-6 border-t border-white/5 bg-white/5 flex items-center justify-between">
+            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Security Clearance Level 4 Active</p>
+            <div class="flex gap-4">
+                {% if page > 1 %}
+                <a href="{{ url_for('report_list', page=page-1) }}" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left"></i> Previous Stack
+                </a>
+                {% endif %}
+                {% if page < total_pages %}
+                <a href="{{ url_for('report_list', page=page+1) }}" class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2">
+                    Next Stack <i class="fa-solid fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
