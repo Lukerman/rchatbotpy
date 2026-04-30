@@ -52,7 +52,6 @@ class Database:
                 level INTEGER DEFAULT 1,
                 referral_code TEXT DEFAULT '',
                 referred_by INTEGER DEFAULT 0,
-                referred_by INTEGER DEFAULT 0,
                 last_daily_reward INTEGER DEFAULT 0,
                 daily_streak INTEGER DEFAULT 0,
                 daily_chats_count INTEGER DEFAULT 0,
